@@ -4,49 +4,72 @@ import Data.List (transpose)
 import TTT.A1
 import TTT.A2
 import TTT.A3 (getAllLines, putSquare)
+import Text.ParserCombinators.ReadPrec (reset)
 
 -- Q#01
-
-_HEADER_ = undefined
+_HEADER_ :: String
+_HEADER_ = ' ' : formatLine (map show _RANGE_)
 
 -- Q#02
-
-showSquares = undefined
+showSquares :: [Square] -> [String]
+showSquares = map showSquare
 
 -- Q#03
-
-dropFirstCol = undefined
+dropFirstCol :: Board -> Board
+dropFirstCol = map tail
 
 -- Q#04
-
-dropLastCol = undefined
+dropLastCol :: Board -> Board
+dropLastCol = map init
 
 --Q#05
-
-formatRows = undefined
+formatRows :: [Row] -> [String]
+formatRows = map (\row -> formatLine $ showSquares row)
 
 -- Q#06
-
-isWinningLine_ = undefined
+isWinningLine_ :: Player -> Line -> Bool
+isWinningLine_ _ [] = False
+isWinningLine_ p ln = null $ filter (/= p) ln
 
 -- Q#07
-
-isWinningLine = undefined
+isWinningLine :: Player -> Line -> Bool
+isWinningLine _ [] = False
+isWinningLine p ln = foldr (\r acc -> r == p && acc) True ln
 
 -- Q#08
+hasWon :: Player -> Board -> Bool
+hasWon p board = foldr (\ln res -> isWinningLine p ln || res)
+                       False
+                       $ getAllLines board
 
-hasWon = undefined
+_X_WIN_ = [ [X, O, O]
+          , [O, X, O]
+          , [O, O, X]
+          ]
+
+_O_WIN_ = [ [O, X, O]
+          , [X, X, O]
+          , [X, O, O]
+          ]
 
 -- Q#09
+getGameState :: Board -> GameState
+getGameState board
+    | hasWon X board = WonX
+    | hasWon O board = WonO
+    | isTied board   = Tie
+    | otherwise      = InProgress
 
-getGameState = undefined
-
-playMove = undefined
+playMove :: Player -> Board -> Move -> (GameState, Board)
+playMove player board mv =
+    let newBoard = putSquare player board mv
+        newState = getGameState newBoard
+    in  (newState, newBoard)
 
 -- Q#10
-
-prependRowIndices = undefined
+prependRowIndices :: [String] -> [String]
+prependRowIndices = zipWith (:) ['A'..]
 
 -- Q#11
-
-formatBoard = undefined
+formatBoard :: Board -> String
+formatBoard = unlines . (_HEADER_ :) . prependRowIndices . formatRows
